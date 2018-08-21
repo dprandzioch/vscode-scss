@@ -33,6 +33,21 @@ function samePosition(a: Position, b: Position) {
 	return a.line === b.line && a.character === b.character;
 }
 
+function findClosestFile(candidates: ISymbol[]): ISymbol {
+	let closest = candidates[0];
+
+	candidates.forEach((candidate) => {
+		const currentClosestSubfoldersAway = closest.path.split('../').length;
+		const currentCandidateSubfoldersAway = candidate.path.split('../').length;
+
+		if (currentCandidateSubfoldersAway < currentClosestSubfoldersAway) {
+			closest = candidate;
+		}
+	});
+
+	return closest;
+}
+
 /**
  * Returns the Symbol, if it present in the documents.
  */
@@ -118,7 +133,7 @@ export function goDefinition(document: TextDocument, offset: number, cache: ICac
 		return Promise.resolve(null);
 	}
 
-	const definition = candidates[0];
+	const definition = findClosestFile(candidates);
 
 	const symbol = Location.create(Uri.file(definition.document).toString(), {
 		start: definition.info.position,
